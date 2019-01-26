@@ -1,0 +1,78 @@
+buildscript {
+    apply from: 'repos_buildscript.gradle', to: buildscript
+
+    dependencies {
+        classpath 'gradle.plugin.com.pivotstir:gogradle:1.0.15'
+        classpath "com.netflix.nebula:gradle-ospackage-plugin:4.4.0"
+    }
+}
+
+apply from: "repos.gradle", to: repositories
+
+apply plugin: "com.pivotstir.gogradle"
+apply plugin: "nebula.ospackage"
+
+go {
+    env {
+        version = '1.11'
+        useSandbox = false
+    }
+
+    test {
+        envs = ["CGO_ENABLED": 0]
+        ignoredDirs = []
+    }
+
+    grpc {
+        referencePackages = []
+    }
+
+    build {
+        envs = ["CGO_ENABLED": 0]
+    }
+
+    dependencies {
+        build 'golang.org/x/text'
+        build 'golang.org/x/net'
+        build 'github.com/thoas/go-funk'
+        build 'github.com/gin-gonic/gin@v1.3'
+        build 'github.com/aviddiviner/gin-limit'
+        build 'github.com/PuerkitoBio/purell@v1.1.0'
+        build 'github.com/PuerkitoBio/urlesc'
+        build 'github.com/Sirupsen/logrus@v1.0.5'
+        build 'github.com/swaggo/gin-swagger@v1.0'
+
+        test 'github.com/stretchr/testify@v1.2'
+        test 'github.com/Pallinder/go-randomdata'
+        test 'github.com/jarcoal/httpmock'
+        test 'github.com/golang/mock'
+    }
+}
+
+ospackage {
+    packageName = project.name
+    packageGroup = 'Ken Project Group'
+
+    license = 'N/A'
+    url = ''
+    summary = project.name.split('-').collect { it.capitalize() } join(' ')
+    arch = X86_64
+    os = LINUX
+    user = 'root'
+    vendor = 'Ken Vendor'
+    packager = 'Ken Packager'
+
+    into "/product/$project.name"
+
+    from(".gogradle/${project.name}")
+
+    from('docs') {
+        into('docs')
+    }
+
+    from("scripts/${project.name}.service") {
+        into('/usr/lib/systemd/system')
+    }
+
+    link("/product/${project.name}/var/log", "/var/log/product/${project.name}")
+}

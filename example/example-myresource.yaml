@@ -1,0 +1,8 @@
+apiVersion: trstringer.com/v1
+kind: MyResource # the resource struct you want to define
+metadata:
+  name: example-myresource # The prefix name to deploy your pod
+spec:
+  # define the resource struct value here (you should define
+  message: hello world
+  someValue: 13

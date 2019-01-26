@@ -1,0 +1,13 @@
+repositories {
+    jcenter()
+
+    mavenCentral()
+
+    maven {
+        url 'http://dl.bintray.com/kotlin/exposed'
+    }
+
+    maven {
+        url "http://dl.bintray.com/jetbrains/spek"
+    }
+}
