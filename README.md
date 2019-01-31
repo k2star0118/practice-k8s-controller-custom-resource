@@ -20,12 +20,12 @@ k8s calls it "Custom Resource Definition" (CRD). In this section, it defines two
 You could find the file under "crd" folder, I also add more comments in this file which name
 is myresource.yaml. After defined, run following command to create
 
-```
-kubectl apply -f ./crd/myresource.yaml
+```console
+$ kubectl apply -f ./crd/myresource.yaml
 ```
 Create a custom resource of type MyResource
-```
-kubectl apply -f ./example/example-myresource.yaml
+```console
+$ kubectl apply -f ./example/example-myresource.yaml
 ```
 
 ### 2-1. Define your own resource struct
@@ -50,8 +50,8 @@ implementing the runtime.Object interface (this is for both MyResource and MyRes
 
 ### 2-2. Generate custom resource code
 Generate the code to interact with k8s for your own resource. It locates in "/pkg/client" folder.
-```
-sh k8s_ctrl_code_generator.sh
+```console
+$ sh k8s_ctrl_code_generator.sh
 ```
 After running the code generator we now have generated code that handles a large array of functionality for our new resource.
 Now we need to tie a lot of loose ends together for our new resource.
@@ -68,7 +68,7 @@ and where all of the work is done as far as the controller loop is concerned
 * handler.go — the sample handler that the controller uses to take action on triggered events
 
 ### 4. Run
-```
+```console
 # Apply config
 kubectl apply -f ./crd/myresource.yaml
 
