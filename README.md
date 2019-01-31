@@ -18,18 +18,46 @@ $ go run main.go
 // Create a custom resource of type MyResource
 // You can see the enable/disable get, put value in this example file
 $ kubectl apply -f ./example/example-myresource.yaml
+myresource.trstringer.com/example-gin-gonic-http created
+```
 
-// Get the pod ip, here example is 172.17.0.5
+### Verify
+You should get pod ip first, here example is 172.17.0.5
+```console
+// Get the pod ip
 $ kubectl get pods -o wide
 NAME                                        READY   STATUS    RESTARTS   AGE     IP           NODE       NOMINATED NODE
 example-gin-gonic-http-6bfcb797b-f2w54      1/1     Running   0          15d     172.17.0.5   minikube   <none>
+```
 
-// Login to your k8s cluster node, if you run as minikube, you can login via
+To use curl command, you should login your k8s cluster node. If you run minikube, you can login via
+```console
 $ minikube ssh
+```
 
-// Use the ip address to send the request
+For this practice, we default enable get only for gin-gonic http service.
+```console
 $ curl -X GET http://172.17.0.5:8888/example
 {"message":"Successfully to query get example"}
+
+$ curl -X PUT http://172.17.0.9:8888/example
+"Does not enable put method"
+```
+
+When you change the the file "example/example-myresource.ymal" and apply config again,
+you will get the different curl result
+```console
+$ kubectl apply -f ./crd/myresource.yaml
+myresource.trstringer.com/example-gin-gonic-http configured
+```
+
+If you change the value {spec.someValue} from 1 to 2, then you will get
+```console
+$ curl -X GET http://172.17.0.5:8888/example
+"Does not enable get method"
+
+$ curl -X PUT http://172.17.0.9:8888/example
+{"message":"Successfully to query put example"}
 ```
 
 ## Develop step
