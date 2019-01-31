@@ -6,6 +6,7 @@ require (
 	github.com/Sirupsen/logrus v1.0.5
 	github.com/aviddiviner/gin-limit v0.0.0-20170918012823-43b5f79762c1 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
+	github.com/evanphx/json-patch v4.1.0+incompatible // indirect
 	github.com/gin-contrib/sse v0.0.0-20190125020943-a7658810eb74 // indirect
 	github.com/gin-gonic/gin v1.3.0 // indirect
 	github.com/gogo/protobuf v1.2.0 // indirect
@@ -22,7 +23,7 @@ require (
 	github.com/peterbourgon/diskv v2.0.1+incompatible // indirect
 	github.com/spf13/pflag v1.0.3 // indirect
 	github.com/thoas/go-funk v0.0.0-20181020164546-fbae87fb5b5c // indirect
-	github.com/trstringer/k8s-controller-custom-resource v0.0.0-20180418020716-2c2bde7ed9b4
+	github.com/trstringer/k8s-controller-custom-resource v0.0.0-20180418020716-2c2bde7ed9b4 // indirect
 	github.com/ugorji/go/codec v0.0.0-20181209151446-772ced7fd4c2 // indirect
 	golang.org/x/crypto v0.0.0-20190123085648-057139ce5d2b // indirect
 	golang.org/x/net v0.0.0-20190125091013-d26f9f9a57f3 // indirect
@@ -35,6 +36,8 @@ require (
 	k8s.io/api v0.0.0-20181221193117-173ce66c1e39
 	k8s.io/apimachinery v0.0.0-20190119020841-d41becfba9ee
 	k8s.io/client-go v10.0.0+incompatible
+	k8s.io/code-generator v0.0.0-20181206115026-3a2206dd6a78 // indirect
 	k8s.io/klog v0.1.0 // indirect
+	k8s.io/kube-openapi v0.0.0-20190115222348-ced9eb3070a5 // indirect
 	sigs.k8s.io/yaml v1.1.0 // indirect
 )

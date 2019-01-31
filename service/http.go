@@ -14,7 +14,39 @@ import (
 
 func int32Ptr(i int32) *int32 { return &i }
 
+func getHttpEnvVariable(value int32) ([]apiv1.EnvVar) {
+	var enableGet = "true"
+	var enablePut = "false"
+	switch value {
+	case 2:
+		enableGet = "false"
+		enablePut = "true"
+	case 3:
+		enableGet = "true"
+		enablePut = "true"
+	case 4:
+		enableGet = "false"
+		enablePut = "false"
+	default:
+		enableGet = "true"
+		enablePut = "false"
+	}
+	return []apiv1.EnvVar {
+		{
+			Name: "ENABLE_GET",
+			Value: enableGet,
+		},
+		{
+			Name: "ENABLE_PUT",
+			Value: enablePut,
+		},
+	}
+}
+
 func createHttpServiceSpec(resource *v1.MyResource) (*appsv1.Deployment) {
+	image := resource.Spec.Message
+	env := getHttpEnvVariable(*resource.Spec.SomeValue)
+
 	return &appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: resource.Name,
@@ -36,14 +68,15 @@ func createHttpServiceSpec(resource *v1.MyResource) (*appsv1.Deployment) {
 					Containers: []apiv1.Container{
 						{
 							Name:  "web",
-							Image: "nginx:1.12",
+							Image: image,
 							Ports: []apiv1.ContainerPort{
 								{
 									Name:          "http",
 									Protocol:      apiv1.ProtocolTCP,
-									ContainerPort: 80,
+									ContainerPort: 8888,
 								},
 							},
+							Env: env,
 						},
 					},
 				},
@@ -88,9 +121,9 @@ func UpdateHttp(objOld interface{}, objNew interface{}) {
 		if getErr != nil {
 			panic(fmt.Errorf("Failed to get latest version of Deployment: %v", getErr))
 		}
-
-		//result.Spec.Replicas = int32Ptr(1)                           // reduce replica count
-		result.Spec.Template.Spec.Containers[0].Image = "nginx:1.13" // change nginx version
+		env := getHttpEnvVariable(*(objNew.(*v1.MyResource).Spec.SomeValue))
+		log.Infof("Updated env value: %v", env)
+		result.Spec.Template.Spec.Containers[0].Env = env
 		_, updateErr := deploymentsClient.Update(result)
 		return updateErr
 	})

@@ -1,8 +1,15 @@
 apiVersion: trstringer.com/v1
 kind: MyResource # the resource struct you want to define
 metadata:
-  name: example-myresource # The prefix name to deploy your pod
+  name: example-gin-gonic-http # The prefix name to deploy your pod
 spec:
   # define the resource struct value here (you should define
-  message: hello world
-  someValue: 13
+  # someValue:
+  #    | GET | PUT
+  # 1  |  o  |  x
+  # 2  |  x  |  o
+  # 3  |  o  |  o
+  # 4  |  x  |  x
+  # .. |  o  |  x
+  message: k2star0118/practice-gin-gonic
+  someValue: 2

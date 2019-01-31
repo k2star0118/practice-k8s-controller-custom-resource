@@ -56,6 +56,10 @@ sh k8s_ctrl_code_generator.sh
 After running the code generator we now have generated code that handles a large array of functionality for our new resource.
 Now we need to tie a lot of loose ends together for our new resource.
 
+#### Note
+When you run the command in step 4, you may face this issue, if you use go module instead of godep
+https://github.com/kubernetes/kubernetes/issues/67566
+
 ### 3. Write controller to manage CRD
 This is the part to define how to manager your resource
 * main.go — this is the entry point for the controller as well as where everything is wired up. 
@@ -65,12 +69,30 @@ and where all of the work is done as far as the controller loop is concerned
 
 ### 4. Run
 ```
-go run *.go
+# Apply config
+kubectl apply -f ./crd/myresource.yaml
+
+# Run the CRD
+$ go run *.go
+
+# Create a custom resource of type MyResource
+# You can see the enable/disable get, put value in this example file
+$ kubectl apply -f ./example/example-myresource.yaml
+
+# Get the pod ip
+$ kubectl get pods -o wide
+NAME                                        READY   STATUS    RESTARTS   AGE     IP           NODE       NOMINATED NODE
+example-gin-gonic-http-6bfcb797b-f2w54      1/1     Running   0          15d     172.17.0.5   minikube   <none>
+
+# Login to your k8s cluster node, if you run as minikube, you can login via
+$ minikube sh
+
+# Use the ip address to send the request
+$ curl -X GET http://172.17.0.5:8888/example
+{"message":"Successfully to query get example"}
+
 ```
 
-#### Note
-When you run the command in step 4, you may face this issue, if you use go module instead of godep
-https://github.com/kubernetes/kubernetes/issues/67566
 
 ### Write resource basic information for Pod
 Define example-myresource.yaml in example, it defines followings
