@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"strings"
 	"time"
 
 	log "github.com/Sirupsen/logrus"
@@ -13,12 +12,13 @@ import (
 	"k8s.io/client-go/util/workqueue"
 )
 
+const maxRetries = 5
+
 // Event indicate the informerEvent
 type Event struct {
 	key          string
 	eventType    string
-	namespace    string
-	resourceType string
+	oldObj		 interface {}
 }
 
 // Controller struct defines how a controller should encapsulate
@@ -84,7 +84,7 @@ func (c *Controller) processNextItem() bool {
 	// fetch the next item (blocking) from the queue to process or
 	// if a shutdown is requested then return out of this to stop
 	// processing
-	key, quit := c.queue.Get()
+	newEvent, quit := c.queue.Get()
 
 	// stop the worker loop from running as this indicates we
 	// have sent a shutdown message that the queue has indicated
@@ -92,61 +92,43 @@ func (c *Controller) processNextItem() bool {
 	if quit {
 		return false
 	}
-
-	defer c.queue.Done(key)
-
-	// assert the string out of the key (format `namespace/name`)
-	keyRaw := key.(string)
-
-	// take the string key and get the object out of the indexer
-	//
-	// item will contain the complex object for the resource and
-	// exists is a bool that'll indicate whether or not the
-	// resource was created (true) or deleted (false)
-	//
-	// if there is an error in getting the key from the index
-	// then we want to retry this particular queue key a certain
-	// number of times (5 here) before we forget the queue key
-	// and throw an error
-	item, exists, err := c.informer.GetIndexer().GetByKey(keyRaw)
-
-	if err != nil {
-		if c.queue.NumRequeues(key) < 5 {
-			c.logger.Errorf("Controller.processNextItem: Failed processing item with key %s with error %v, retrying", key, err)
-			c.queue.AddRateLimited(key)
-		} else {
-			c.logger.Errorf("Controller.processNextItem: Failed processing item with key %s with error %v, no more retries", key, err)
-			c.queue.Forget(key)
-			utilruntime.HandleError(err)
-		}
-	}
-
-	// if the item doesn't exist then it was deleted and we need to fire off the handler's
-	// ObjectDeleted method. but if the object does exist that indicates that the object
-	// was created (or updated) so run the ObjectCreated method
-	//
-	// after both instances, we want to forget the key from the queue, as this indicates
-	// a code path of successful queue key processing
-	if !exists {
-		c.logger.Infof("Controller.processNextItem: object deleted detected: %s", keyRaw)
-		c.handler.ObjectDeleted(strings.Split(keyRaw,"/")[1])
-		c.queue.Forget(key)
+	defer c.queue.Done(newEvent)
+	err := c.processItem(newEvent.(Event))
+	if err == nil {
+		// No error, reset the ratelimit counters
+		c.queue.Forget(newEvent)
+	} else if c.queue.NumRequeues(newEvent) < maxRetries {
+		c.logger.Errorf("Error processing %s (will retry): %v", newEvent.(Event).key, err)
+		c.queue.AddRateLimited(newEvent)
 	} else {
-		c.logger.Infof("Controller.processNextItem: object created detected: %s", keyRaw)
-		// list all my resource
-		/*list, err := myResourceClient.TrstringerV1().MyResources(meta_v1.NamespaceAll).List(meta_v1.ListOptions{})
-		if err != nil {
-			panic(err)
-		}
-		for _, d := range list.Items {
-			c.logger.Infof("Message is: %s", d.Spec.Message)
-		}*/
-
-		//c.logger.Info("Currently item message is: %s", item.(*v1.MyResource).Spec.Message)
-		c.handler.ObjectCreated(item)
-		c.queue.Forget(key)
+		// err != nil and too many retries
+		c.logger.Errorf("Error processing %s (giving up): %v", newEvent.(Event).key, err)
+		c.queue.Forget(newEvent)
+		utilruntime.HandleError(err)
 	}
 
-	// keep the worker loop running by returning true
 	return true
+}
+
+func (c *Controller) processItem(newEvent Event) error {
+	item, _, err := c.informer.GetIndexer().GetByKey(newEvent.key)
+	if err != nil {
+		return fmt.Errorf("Error fetching object with key %s from store: %v", newEvent.key, err)
+	}
+
+	// process events based on its type
+	switch newEvent.eventType {
+	case "create":
+		c.handler.ObjectCreated(item)
+		return nil
+	case "update":
+		c.handler.ObjectUpdated(newEvent.oldObj, item)
+		return nil
+	case "delete":
+		log.Infof("Old obj is: %v", newEvent.oldObj)
+		c.handler.ObjectDeleted(newEvent.oldObj)
+		return nil
+	}
+
+	return nil
 }

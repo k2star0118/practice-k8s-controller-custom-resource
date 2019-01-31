@@ -70,7 +70,7 @@ func CreateHttp(obj interface{}) {
 			if err != nil {
 				panic(err)
 			}
-			log.Info("Created deployment %s.\n", result.GetObjectMeta().GetName())
+			log.Infof("Created deployment %s.\n", result.GetObjectMeta().GetName())
 		} else {
 			log.Errorf("Failed to query resource (%s)\n", myResource.Name)
 			panic(err)
@@ -78,22 +78,23 @@ func CreateHttp(obj interface{}) {
 	}
 }
 
-//TODO: not changed
-func UpdateHttp() {
+//TODO: need to change
+func UpdateHttp(objOld interface{}, objNew interface{}) {
 	deploymentsClient := util.GetDeploymentClient()
 	retryErr := retry.RetryOnConflict(retry.DefaultRetry, func() error {
 		// Retrieve the latest version of Deployment before attempting update
 		// RetryOnConflict uses exponential backoff to avoid exhausting the apiserver
-		result, getErr := deploymentsClient.Get("demo-deployment", metav1.GetOptions{})
+		result, getErr := deploymentsClient.Get(objOld.(*v1.MyResource).Name, metav1.GetOptions{})
 		if getErr != nil {
 			panic(fmt.Errorf("Failed to get latest version of Deployment: %v", getErr))
 		}
 
-		result.Spec.Replicas = int32Ptr(1)                           // reduce replica count
+		//result.Spec.Replicas = int32Ptr(1)                           // reduce replica count
 		result.Spec.Template.Spec.Containers[0].Image = "nginx:1.13" // change nginx version
 		_, updateErr := deploymentsClient.Update(result)
 		return updateErr
 	})
+
 	if retryErr != nil {
 		panic(fmt.Errorf("Update failed: %v", retryErr))
 	}
@@ -102,7 +103,7 @@ func UpdateHttp() {
 func DeleteHttp(obj interface{}) {
 	deploymentsClient := util.GetDeploymentClient()
 	deletePolicy := metav1.DeletePropagationForeground
-	if err := deploymentsClient.Delete(obj.(string), &metav1.DeleteOptions{
+	if err := deploymentsClient.Delete(obj.(*v1.MyResource).Name, &metav1.DeleteOptions{
 		PropagationPolicy: &deletePolicy,
 	}); err != nil {
 		panic(err)

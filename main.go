@@ -11,7 +11,7 @@ import (
 	"k8s.io/client-go/util/workqueue"
 
 	myresourceinformer_v1 "k8s-controller-custom-resource/pkg/client/informers/externalversions/myresource/v1"
-	util "k8s-controller-custom-resource/util"
+	"k8s-controller-custom-resource/util"
 )
 
 // main code path
@@ -38,23 +38,27 @@ func main() {
 	//  - adding new resources
 	//  - updating existing resources
 	//  - deleting resources
+	var newEvent Event
+	var err error
 	informer.AddEventHandler(cache.ResourceEventHandlerFuncs{
 		AddFunc: func(obj interface{}) {
 			// convert the resource object into a key (in this case
 			// we are just doing it in the format of 'namespace/name')
-			key, err := cache.MetaNamespaceKeyFunc(obj)
-			log.Infof("Add myresource: %s", key)
+			newEvent.key, err = cache.MetaNamespaceKeyFunc(obj)
+			newEvent.eventType = "create"
+			log.Infof("Add myresource: %s", newEvent.key)
 			if err == nil {
 				// add the key to the queue for the handler to get
-				queue.Add(key)
+				queue.Add(newEvent)
 			}
 		},
 		UpdateFunc: func(oldObj, newObj interface{}) {
-			key, err := cache.MetaNamespaceKeyFunc(newObj)
-			log.Infof("Update myresource: %s", key)
-			log.Infof("Value is %v", newObj)
+			newEvent.key, err = cache.MetaNamespaceKeyFunc(oldObj)
+			newEvent.eventType = "update"
+			newEvent.oldObj = oldObj
+			log.Infof("Update myresource: %s", newEvent.key)
 			if err == nil {
-				queue.Add(key)
+				queue.Add(newEvent)
 			}
 		},
 		DeleteFunc: func(obj interface{}) {
@@ -63,10 +67,12 @@ func main() {
 			// a resource was deleted but it is still contained in the index
 			//
 			// this then in turn calls MetaNamespaceKeyFunc
-			key, err := cache.DeletionHandlingMetaNamespaceKeyFunc(obj)
-			log.Infof("Delete myresource: %s", key)
+			newEvent.key, err = cache.MetaNamespaceKeyFunc(obj)
+			newEvent.eventType = "delete"
+			newEvent.oldObj = obj
+			log.Infof("Delete myresource: %s", newEvent.key)
 			if err == nil {
-				queue.Add(key)
+				queue.Add(newEvent)
 			}
 		},
 	})

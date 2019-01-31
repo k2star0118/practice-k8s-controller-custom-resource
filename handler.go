@@ -38,4 +38,5 @@ func (t *TestHandler) ObjectDeleted(obj interface{}) {
 // ObjectUpdated is called when an object is updated
 func (t *TestHandler) ObjectUpdated(objOld, objNew interface{}) {
 	log.Info("TestHandler.ObjectUpdated")
+	service.UpdateHttp(objOld, objNew)
 }
