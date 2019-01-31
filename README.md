@@ -6,7 +6,31 @@ To understand how to develop the k8s custom, I follow the code from this repo:
 I also refer to two major articles listed as the followings.
 First article explains more detail about CRD, and the second one has example to hand on.
 * https://medium.com/@trstringer/create-kubernetes-controllers-for-core-and-custom-resources-62fc35ad64a3
-* https://blog.csdn.net/jiangmingjun1234/article/details/79296542
+
+## Run
+```console
+// Apply config
+$ kubectl apply -f ./crd/myresource.yaml
+
+// Run the CRD
+$ go run main.go
+
+// Create a custom resource of type MyResource
+// You can see the enable/disable get, put value in this example file
+$ kubectl apply -f ./example/example-myresource.yaml
+
+// Get the pod ip, here example is 172.17.0.5
+$ kubectl get pods -o wide
+NAME                                        READY   STATUS    RESTARTS   AGE     IP           NODE       NOMINATED NODE
+example-gin-gonic-http-6bfcb797b-f2w54      1/1     Running   0          15d     172.17.0.5   minikube   <none>
+
+// Login to your k8s cluster node, if you run as minikube, you can login via
+$ minikube ssh
+
+// Use the ip address to send the request
+$ curl -X GET http://172.17.0.5:8888/example
+{"message":"Successfully to query get example"}
+```
 
 ## Develop step
 When you want to deploy your own docker container and do some management via k8s,
@@ -66,34 +90,3 @@ This is the part to define how to manager your resource
 * controller.go — the Controller struct and methods, 
 and where all of the work is done as far as the controller loop is concerned
 * handler.go — the sample handler that the controller uses to take action on triggered events
-
-### 4. Run
-```console
-// Apply config
-$ kubectl apply -f ./crd/myresource.yaml
-
-// Run the CRD
-$ go run main.go
-
-// Create a custom resource of type MyResource
-// You can see the enable/disable get, put value in this example file
-$ kubectl apply -f ./example/example-myresource.yaml
-
-// Get the pod ip, here example is 172.17.0.5
-$ kubectl get pods -o wide
-NAME                                        READY   STATUS    RESTARTS   AGE     IP           NODE       NOMINATED NODE
-example-gin-gonic-http-6bfcb797b-f2w54      1/1     Running   0          15d     172.17.0.5   minikube   <none>
-
-// Login to your k8s cluster node, if you run as minikube, you can login via
-$ minikube ssh
-
-// Use the ip address to send the request
-$ curl -X GET http://172.17.0.5:8888/example
-{"message":"Successfully to query get example"}
-```
-
-
-### Write resource basic information for Pod
-Define example-myresource.yaml in example, it defines followings
-* What API version we use (For manager)
-* What Container we use (For deploy)
