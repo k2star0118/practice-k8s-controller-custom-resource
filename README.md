@@ -40,7 +40,7 @@ For this practice, we default enable get only for gin-gonic http service.
 $ curl -X GET http://172.17.0.5:8888/example
 {"message":"Successfully to query get example"}
 
-$ curl -X PUT http://172.17.0.9:8888/example
+$ curl -X PUT http://172.17.0.5:8888/example
 "Does not enable put method"
 ```
 
@@ -56,7 +56,7 @@ If you change the value {spec.someValue} from 1 to 2, then you will get
 $ curl -X GET http://172.17.0.5:8888/example
 "Does not enable get method"
 
-$ curl -X PUT http://172.17.0.9:8888/example
+$ curl -X PUT http://172.17.0.5:8888/example
 {"message":"Successfully to query put example"}
 ```
 
