@@ -7,6 +7,11 @@ I also refer to two major articles listed as the followings.
 First article explains more detail about CRD, and the second one has example to hand on.
 * https://medium.com/@trstringer/create-kubernetes-controllers-for-core-and-custom-resources-62fc35ad64a3
 
+In this example, I also build a gin-gonic base http service, you can refer to
+* https://github.com/k2star0118/practice-gin-gonic
+And I push the docker image to my dockerhub
+* k2star0118/practice-gin-gonic
+
 ## Run
 ```console
 // Apply config
