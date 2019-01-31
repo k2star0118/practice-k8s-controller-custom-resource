@@ -73,7 +73,7 @@ and where all of the work is done as far as the controller loop is concerned
 kubectl apply -f ./crd/myresource.yaml
 
 # Run the CRD
-$ go run *.go
+$ go run main.go
 
 # Create a custom resource of type MyResource
 # You can see the enable/disable get, put value in this example file

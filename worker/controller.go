@@ -1,4 +1,4 @@
-package main
+package worker
 
 import (
 	"fmt"
@@ -16,53 +16,53 @@ const maxRetries = 5
 
 // Event indicate the informerEvent
 type Event struct {
-	key          string
-	eventType    string
-	oldObj		 interface {}
+	Key       string
+	EventType string
+	OldObj    interface {}
 }
 
 // Controller struct defines how a controller should encapsulate
 // logging, client connectivity, informing (list and watching)
 // queueing, and handling of resource changes
 type Controller struct {
-	logger    *log.Entry
-	clientset kubernetes.Interface
-	queue     workqueue.RateLimitingInterface
-	informer  cache.SharedIndexInformer
-	handler   Handler
+	Logger    *log.Entry
+	Clientset kubernetes.Interface
+	Queue     workqueue.RateLimitingInterface
+	Informer  cache.SharedIndexInformer
+	Handler   Handler
 }
 
 // Run is the main path of execution for the controller loop
 func (c *Controller) Run(stopCh <-chan struct{}) {
 	// handle a panic with logging and exiting
 	defer utilruntime.HandleCrash()
-	// ignore new items in the queue but when all goroutines
+	// ignore new items in the Queue but when all goroutines
 	// have completed existing items then shutdown
-	defer c.queue.ShutDown()
+	defer c.Queue.ShutDown()
 
-	c.logger.Info("Controller.Run: initiating")
+	c.Logger.Info("Controller.Run: initiating")
 
-	// run the informer to start listing and watching resources
-	go c.informer.Run(stopCh)
+	// run the Informer to start listing and watching resources
+	go c.Informer.Run(stopCh)
 
 	// do the initial synchronization (one time) to populate resources
 	if !cache.WaitForCacheSync(stopCh, c.HasSynced) {
 		utilruntime.HandleError(fmt.Errorf("Error syncing cache"))
 		return
 	}
-	c.logger.Info("Controller.Run: cache sync complete")
+	c.Logger.Info("Controller.Run: cache sync complete")
 
 	// run the runWorker method every second with a stop channel
 	wait.Until(c.runWorker, time.Second, stopCh)
 }
 
 // HasSynced allows us to satisfy the Controller interface
-// by wiring up the informer's HasSynced method to it
+// by wiring up the Informer's HasSynced method to it
 func (c *Controller) HasSynced() bool {
-	return c.informer.HasSynced()
+	return c.Informer.HasSynced()
 }
 
-// runWorker executes the loop to process new items added to the queue
+// runWorker executes the loop to process new items added to the Queue
 func (c *Controller) runWorker() {
 	log.Info("Controller.runWorker: starting")
 
@@ -76,34 +76,34 @@ func (c *Controller) runWorker() {
 }
 
 // processNextItem retrieves each queued item and takes the
-// necessary handler action based off of if the item was
+// necessary Handler action based off of if the item was
 // created or deleted
 func (c *Controller) processNextItem() bool {
 	log.Info("Controller.processNextItem: start")
 
-	// fetch the next item (blocking) from the queue to process or
+	// fetch the next item (blocking) from the Queue to process or
 	// if a shutdown is requested then return out of this to stop
 	// processing
-	newEvent, quit := c.queue.Get()
+	newEvent, quit := c.Queue.Get()
 
 	// stop the worker loop from running as this indicates we
-	// have sent a shutdown message that the queue has indicated
+	// have sent a shutdown message that the Queue has indicated
 	// from the Get method
 	if quit {
 		return false
 	}
-	defer c.queue.Done(newEvent)
+	defer c.Queue.Done(newEvent)
 	err := c.processItem(newEvent.(Event))
 	if err == nil {
 		// No error, reset the ratelimit counters
-		c.queue.Forget(newEvent)
-	} else if c.queue.NumRequeues(newEvent) < maxRetries {
-		c.logger.Errorf("Error processing %s (will retry): %v", newEvent.(Event).key, err)
-		c.queue.AddRateLimited(newEvent)
+		c.Queue.Forget(newEvent)
+	} else if c.Queue.NumRequeues(newEvent) < maxRetries {
+		c.Logger.Errorf("Error processing %s (will retry): %v", newEvent.(Event).Key, err)
+		c.Queue.AddRateLimited(newEvent)
 	} else {
 		// err != nil and too many retries
-		c.logger.Errorf("Error processing %s (giving up): %v", newEvent.(Event).key, err)
-		c.queue.Forget(newEvent)
+		c.Logger.Errorf("Error processing %s (giving up): %v", newEvent.(Event).Key, err)
+		c.Queue.Forget(newEvent)
 		utilruntime.HandleError(err)
 	}
 
@@ -111,22 +111,22 @@ func (c *Controller) processNextItem() bool {
 }
 
 func (c *Controller) processItem(newEvent Event) error {
-	item, _, err := c.informer.GetIndexer().GetByKey(newEvent.key)
+	item, _, err := c.Informer.GetIndexer().GetByKey(newEvent.Key)
 	if err != nil {
-		return fmt.Errorf("Error fetching object with key %s from store: %v", newEvent.key, err)
+		return fmt.Errorf("Error fetching object with Key %s from store: %v", newEvent.Key, err)
 	}
 
 	// process events based on its type
-	switch newEvent.eventType {
+	switch newEvent.EventType {
 	case "create":
-		c.handler.ObjectCreated(item)
+		c.Handler.ObjectCreated(item)
 		return nil
 	case "update":
-		c.handler.ObjectUpdated(newEvent.oldObj, item)
+		c.Handler.ObjectUpdated(newEvent.OldObj, item)
 		return nil
 	case "delete":
-		log.Infof("Old obj is: %v", newEvent.oldObj)
-		c.handler.ObjectDeleted(newEvent.oldObj)
+		log.Infof("Old obj is: %v", newEvent.OldObj)
+		c.Handler.ObjectDeleted(newEvent.OldObj)
 		return nil
 	}
 

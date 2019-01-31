@@ -12,6 +12,7 @@ import (
 
 	myresourceinformer_v1 "k8s-controller-custom-resource/pkg/client/informers/externalversions/myresource/v1"
 	"k8s-controller-custom-resource/util"
+	"k8s-controller-custom-resource/worker"
 )
 
 // main code path
@@ -38,25 +39,25 @@ func main() {
 	//  - adding new resources
 	//  - updating existing resources
 	//  - deleting resources
-	var newEvent Event
+	var newEvent worker.Event
 	var err error
 	informer.AddEventHandler(cache.ResourceEventHandlerFuncs{
 		AddFunc: func(obj interface{}) {
 			// convert the resource object into a key (in this case
 			// we are just doing it in the format of 'namespace/name')
-			newEvent.key, err = cache.MetaNamespaceKeyFunc(obj)
-			newEvent.eventType = "create"
-			log.Infof("Add myresource: %s", newEvent.key)
+			newEvent.Key, err = cache.MetaNamespaceKeyFunc(obj)
+			newEvent.EventType = "create"
+			log.Infof("Add myresource: %s", newEvent.Key)
 			if err == nil {
 				// add the key to the queue for the handler to get
 				queue.Add(newEvent)
 			}
 		},
 		UpdateFunc: func(oldObj, newObj interface{}) {
-			newEvent.key, err = cache.MetaNamespaceKeyFunc(oldObj)
-			newEvent.eventType = "update"
-			newEvent.oldObj = oldObj
-			log.Infof("Update myresource: %s", newEvent.key)
+			newEvent.Key, err = cache.MetaNamespaceKeyFunc(oldObj)
+			newEvent.EventType = "update"
+			newEvent.OldObj = oldObj
+			log.Infof("Update myresource: %s", newEvent.Key)
 			if err == nil {
 				queue.Add(newEvent)
 			}
@@ -67,10 +68,10 @@ func main() {
 			// a resource was deleted but it is still contained in the index
 			//
 			// this then in turn calls MetaNamespaceKeyFunc
-			newEvent.key, err = cache.MetaNamespaceKeyFunc(obj)
-			newEvent.eventType = "delete"
-			newEvent.oldObj = obj
-			log.Infof("Delete myresource: %s", newEvent.key)
+			newEvent.Key, err = cache.MetaNamespaceKeyFunc(obj)
+			newEvent.EventType = "delete"
+			newEvent.OldObj = obj
+			log.Infof("Delete myresource: %s", newEvent.Key)
 			if err == nil {
 				queue.Add(newEvent)
 			}
@@ -80,12 +81,13 @@ func main() {
 	// construct the Controller object which has all of the necessary components to
 	// handle logging, connections, informing (listing and watching), the queue,
 	// and the handler
-	controller := Controller{
-		logger:    log.NewEntry(log.New()),
-		clientset: client,
-		informer:  informer,
-		queue:     queue,
-		handler:   &TestHandler{},
+
+	controller := worker.Controller {
+		Logger:    log.NewEntry(log.New()),
+		Clientset: client,
+		Informer:  informer,
+		Queue:     queue,
+		Handler:   &worker.TestHandler{},
 	}
 
 	// use a channel to synchronize the finalization for a graceful shutdown

@@ -1,4 +1,4 @@
-package main
+package worker
 
 import (
 	log "github.com/Sirupsen/logrus"
@@ -16,7 +16,7 @@ type Handler interface {
 // TestHandler is a sample implementation of Handler
 type TestHandler struct{}
 
-// Init handles any handler initialization
+// Init handles any Handler initialization
 func (t *TestHandler) Init() error {
 	log.Info("TestHandler.Init")
 	return nil
