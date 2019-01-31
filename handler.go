@@ -2,6 +2,7 @@ package main
 
 import (
 	log "github.com/Sirupsen/logrus"
+	"k8s-controller-custom-resource/service"
 )
 
 // Handler interface contains the methods that are required
@@ -24,11 +25,14 @@ func (t *TestHandler) Init() error {
 // ObjectCreated is called when an object is created
 func (t *TestHandler) ObjectCreated(obj interface{}) {
 	log.Info("TestHandler.ObjectCreated")
+	// log.Info("MyResource is: %v", obj.(*v1.MyResource).Spec.Message)
+	service.CreateHttp(obj)
 }
 
 // ObjectDeleted is called when an object is deleted
 func (t *TestHandler) ObjectDeleted(obj interface{}) {
 	log.Info("TestHandler.ObjectDeleted")
+	service.DeleteHttp(obj)
 }
 
 // ObjectUpdated is called when an object is updated

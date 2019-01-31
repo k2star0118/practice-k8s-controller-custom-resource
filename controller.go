@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	log "github.com/Sirupsen/logrus"
@@ -11,6 +12,14 @@ import (
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/util/workqueue"
 )
+
+// Event indicate the informerEvent
+type Event struct {
+	key          string
+	eventType    string
+	namespace    string
+	resourceType string
+}
 
 // Controller struct defines how a controller should encapsulate
 // logging, client connectivity, informing (list and watching)
@@ -100,6 +109,7 @@ func (c *Controller) processNextItem() bool {
 	// number of times (5 here) before we forget the queue key
 	// and throw an error
 	item, exists, err := c.informer.GetIndexer().GetByKey(keyRaw)
+
 	if err != nil {
 		if c.queue.NumRequeues(key) < 5 {
 			c.logger.Errorf("Controller.processNextItem: Failed processing item with key %s with error %v, retrying", key, err)
@@ -119,10 +129,20 @@ func (c *Controller) processNextItem() bool {
 	// a code path of successful queue key processing
 	if !exists {
 		c.logger.Infof("Controller.processNextItem: object deleted detected: %s", keyRaw)
-		c.handler.ObjectDeleted(item)
+		c.handler.ObjectDeleted(strings.Split(keyRaw,"/")[1])
 		c.queue.Forget(key)
 	} else {
 		c.logger.Infof("Controller.processNextItem: object created detected: %s", keyRaw)
+		// list all my resource
+		/*list, err := myResourceClient.TrstringerV1().MyResources(meta_v1.NamespaceAll).List(meta_v1.ListOptions{})
+		if err != nil {
+			panic(err)
+		}
+		for _, d := range list.Items {
+			c.logger.Infof("Message is: %s", d.Spec.Message)
+		}*/
+
+		//c.logger.Info("Currently item message is: %s", item.(*v1.MyResource).Spec.Message)
 		c.handler.ObjectCreated(item)
 		c.queue.Forget(key)
 	}
