@@ -69,28 +69,27 @@ and where all of the work is done as far as the controller loop is concerned
 
 ### 4. Run
 ```console
-# Apply config
-kubectl apply -f ./crd/myresource.yaml
+// Apply config
+$ kubectl apply -f ./crd/myresource.yaml
 
-# Run the CRD
+// Run the CRD
 $ go run main.go
 
-# Create a custom resource of type MyResource
-# You can see the enable/disable get, put value in this example file
+// Create a custom resource of type MyResource
+// You can see the enable/disable get, put value in this example file
 $ kubectl apply -f ./example/example-myresource.yaml
 
-# Get the pod ip, here example is 172.17.0.5
+// Get the pod ip, here example is 172.17.0.5
 $ kubectl get pods -o wide
 NAME                                        READY   STATUS    RESTARTS   AGE     IP           NODE       NOMINATED NODE
 example-gin-gonic-http-6bfcb797b-f2w54      1/1     Running   0          15d     172.17.0.5   minikube   <none>
 
-# Login to your k8s cluster node, if you run as minikube, you can login via
+// Login to your k8s cluster node, if you run as minikube, you can login via
 $ minikube ssh
 
-# Use the ip address to send the request
+// Use the ip address to send the request
 $ curl -X GET http://172.17.0.5:8888/example
 {"message":"Successfully to query get example"}
-
 ```
 
 
