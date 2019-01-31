@@ -18,13 +18,13 @@ import (
 // main code path
 func main() {
 	// get the Kubernetes client for connectivity
-	client, myresourceClient := util.GetBothKubernetesClient()
+	client, myResourceClient := util.GetBothKubernetesClient()
 
 	// retrieve our custom resource informer which was generated from
 	// the code generator and pass it the custom resource client, specifying
 	// we should be looking through all namespaces for listing and watching
 	informer := myresourceinformer_v1.NewMyResourceInformer(
-		myresourceClient,
+		myResourceClient,
 		meta_v1.NamespaceAll,
 		0,
 		cache.Indexers{},

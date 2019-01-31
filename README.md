@@ -79,13 +79,13 @@ $ go run main.go
 # You can see the enable/disable get, put value in this example file
 $ kubectl apply -f ./example/example-myresource.yaml
 
-# Get the pod ip
+# Get the pod ip, here example is 172.17.0.5
 $ kubectl get pods -o wide
 NAME                                        READY   STATUS    RESTARTS   AGE     IP           NODE       NOMINATED NODE
 example-gin-gonic-http-6bfcb797b-f2w54      1/1     Running   0          15d     172.17.0.5   minikube   <none>
 
 # Login to your k8s cluster node, if you run as minikube, you can login via
-$ minikube sh
+$ minikube ssh
 
 # Use the ip address to send the request
 $ curl -X GET http://172.17.0.5:8888/example

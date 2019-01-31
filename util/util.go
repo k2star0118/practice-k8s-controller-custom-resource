@@ -1,9 +1,11 @@
 package util
 
 import (
+	"errors"
+	"fmt"
+	"log"
 	"os"
 
-	log "github.com/Sirupsen/logrus"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/kubernetes"
 	k8sAppType "k8s.io/client-go/kubernetes/typed/apps/v1"
@@ -13,52 +15,66 @@ import (
 	myresourceclientset "k8s-controller-custom-resource/pkg/client/clientset/versioned"
 )
 
-func GetKubernetsConfig() (*restclient.Config) {
+func GetKubernetesConfig() (*restclient.Config, error) {
 	// construct the path to resolve to `~/.kube/config`
 	kubeConfigPath := os.Getenv("HOME") + "/.kube/config"
 
 	// create the config from the path
 	config, err := clientcmd.BuildConfigFromFlags("", kubeConfigPath)
 	if err != nil {
-		log.Fatalf("getClusterConfig: %v", err)
+		err = errors.New(fmt.Sprintf("GetKubernetesConfig: %v", err))
 	}
 
-	return config
+	return config, err
 }
 
-func GetKubernetesClient() (kubernetes.Interface) {
-	config := GetKubernetsConfig()
+func GetKubernetesClient() (kubernetes.Interface, error) {
+	config, err := GetKubernetesConfig()
+	if err != nil {
+		return nil, err
+	}
 
 	// generate the client based off of the config
 	client, err := kubernetes.NewForConfig(config)
 	if err != nil {
-		log.Fatalf("getClusterConfig: %v", err)
+		err = errors.New(fmt.Sprintf("GetKubernetesClient: %v", err))
 	}
 
-	return client
+	return client, err
 }
 
-func GetMyKubernetesClient() (myresourceclientset.Interface) {
-	config := GetKubernetsConfig()
-
-	myresourceClient, err := myresourceclientset.NewForConfig(config)
+func GetMyKubernetesClient() (myresourceclientset.Interface, error) {
+	config, err := GetKubernetesConfig()
 	if err != nil {
-		log.Fatalf("getClusterConfig: %v", err)
+		return nil, err
 	}
 
-	log.Info("Successfully constructed k8s client")
-	return myresourceClient
+	myResourceClient, err := myresourceclientset.NewForConfig(config)
+	if err != nil {
+		err = errors.New(fmt.Sprintf("GetMyKubernetesClient: %v", err))
+	}
+
+	return myResourceClient, err
 }
 
 // retrieve the Kubernetes cluster client from outside of the cluster
 func GetBothKubernetesClient() (kubernetes.Interface, myresourceclientset.Interface) {
-	client := GetKubernetesClient()
-	myresourceClient := GetMyKubernetesClient()
-	return client, myresourceClient
+	client, err := GetKubernetesClient()
+	if err != nil {
+		log.Fatal(err)
+	}
+	myResourceClient, err := GetMyKubernetesClient()
+	if err != nil {
+		log.Fatal(err)
+	}
+	return client, myResourceClient
 }
 
 func GetDeploymentClient() (k8sAppType.DeploymentInterface) {
-	client := GetKubernetesClient()
+	client, err := GetKubernetesClient()
+	if err != nil {
+		log.Fatal(err)
+	}
 	deploymentsClient := client.AppsV1().Deployments(apiv1.NamespaceDefault)
 	return deploymentsClient
 }
