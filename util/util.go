@@ -4,11 +4,11 @@ import (
 	"os"
 
 	log "github.com/Sirupsen/logrus"
-	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/tools/clientcmd"
-	restclient "k8s.io/client-go/rest"
 	apiv1 "k8s.io/api/core/v1"
+	"k8s.io/client-go/kubernetes"
 	k8sAppType "k8s.io/client-go/kubernetes/typed/apps/v1"
+	restclient "k8s.io/client-go/rest"
+	"k8s.io/client-go/tools/clientcmd"
 
 	myresourceclientset "k8s-controller-custom-resource/pkg/client/clientset/versioned"
 )

@@ -4,12 +4,12 @@ import (
 	"fmt"
 	log "github.com/Sirupsen/logrus"
 	"k8s-controller-custom-resource/pkg/apis/myresource/v1"
+	"k8s-controller-custom-resource/util"
 	appsv1 "k8s.io/api/apps/v1"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/util/retry"
-	"k8s-controller-custom-resource/util"
 )
 
 func int32Ptr(i int32) *int32 { return &i }
