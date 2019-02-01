@@ -111,7 +111,6 @@ func CreateHttp(obj interface{}) {
 	}
 }
 
-//TODO: need to change
 func UpdateHttp(objOld interface{}, objNew interface{}) {
 	deploymentsClient := util.GetDeploymentClient()
 	retryErr := retry.RetryOnConflict(retry.DefaultRetry, func() error {
@@ -143,12 +142,12 @@ func DeleteHttp(obj interface{}) {
 	}
 }
 
-func GetHttp() {
-	/*list, err := deploymentsClient.List(metav1.ListOptions{})
+/*func GetHttp() {
+	list, err := deploymentsClient.List(metav1.ListOptions{})
 	if err != nil {
 		panic(err)
 	}
 	for _, d := range list.Items {
 		fmt.Printf(" * %s (%d replicas)", d.Name, *d.Spec.Replicas)
-	}*/
-}
+	}
+}*/
