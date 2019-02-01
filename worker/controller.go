@@ -47,7 +47,7 @@ func (c *Controller) Run(stopCh <-chan struct{}) {
 
 	// do the initial synchronization (one time) to populate resources
 	if !cache.WaitForCacheSync(stopCh, c.HasSynced) {
-		utilruntime.HandleError(fmt.Errorf("Error syncing cache"))
+		utilruntime.HandleError(fmt.Errorf("error syncing cache"))
 		return
 	}
 	c.Logger.Info("Controller.Run: cache sync complete")
@@ -98,11 +98,11 @@ func (c *Controller) processNextItem() bool {
 		// No error, reset the ratelimit counters
 		c.Queue.Forget(newEvent)
 	} else if c.Queue.NumRequeues(newEvent) < maxRetries {
-		c.Logger.Errorf("Error processing %s (will retry): %v", newEvent.(Event).Key, err)
+		c.Logger.Errorf("Error processing %s (will retry):\n%v", newEvent.(Event).Key, err)
 		c.Queue.AddRateLimited(newEvent)
 	} else {
 		// err != nil and too many retries
-		c.Logger.Errorf("Error processing %s (giving up): %v", newEvent.(Event).Key, err)
+		c.Logger.Errorf("Error processing %s (giving up):\n%v", newEvent.(Event).Key, err)
 		c.Queue.Forget(newEvent)
 		utilruntime.HandleError(err)
 	}
@@ -113,7 +113,7 @@ func (c *Controller) processNextItem() bool {
 func (c *Controller) processItem(newEvent Event) error {
 	item, _, err := c.Informer.GetIndexer().GetByKey(newEvent.Key)
 	if err != nil {
-		return fmt.Errorf("Error fetching object with Key %s from store: %v", newEvent.Key, err)
+		return fmt.Errorf("error fetching object with key %s from store:\n%v", newEvent.Key, err)
 	}
 
 	// process events based on its type
@@ -125,7 +125,7 @@ func (c *Controller) processItem(newEvent Event) error {
 		c.Handler.ObjectUpdated(newEvent.OldObj, item)
 		return nil
 	case "delete":
-		log.Infof("Old obj is: %v", newEvent.OldObj)
+		log.Infof("Old obj is:\n%v", newEvent.OldObj)
 		c.Handler.ObjectDeleted(newEvent.OldObj)
 		return nil
 	}

@@ -22,7 +22,7 @@ func GetKubernetesConfig() (*restclient.Config, error) {
 	// create the config from the path
 	config, err := clientcmd.BuildConfigFromFlags("", kubeConfigPath)
 	if err != nil {
-		err = errors.New(fmt.Sprintf("GetKubernetesConfig: %v", err))
+		err = errors.New(fmt.Sprintf("GetKubernetesConfig:\n%v", err))
 	}
 
 	return config, err
@@ -37,7 +37,7 @@ func GetKubernetesClient() (kubernetes.Interface, error) {
 	// generate the client based off of the config
 	client, err := kubernetes.NewForConfig(config)
 	if err != nil {
-		err = errors.New(fmt.Sprintf("GetKubernetesClient: %v", err))
+		err = errors.New(fmt.Sprintf("GetKubernetesClient:\n%v", err))
 	}
 
 	return client, err
@@ -51,7 +51,7 @@ func GetMyKubernetesClient() (myresourceclientset.Interface, error) {
 
 	myResourceClient, err := myresourceclientset.NewForConfig(config)
 	if err != nil {
-		err = errors.New(fmt.Sprintf("GetMyKubernetesClient: %v", err))
+		err = errors.New(fmt.Sprintf("GetMyKubernetesClient:\n%v", err))
 	}
 
 	return myResourceClient, err

@@ -87,7 +87,7 @@ func main() {
 		Clientset: client,
 		Informer:  informer,
 		Queue:     queue,
-		Handler:   &worker.TestHandler{},
+		Handler:   &worker.MyResourceHandler{},
 	}
 
 	// use a channel to synchronize the finalization for a graceful shutdown

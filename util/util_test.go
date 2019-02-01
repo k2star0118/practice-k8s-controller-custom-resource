@@ -27,13 +27,13 @@ func TestGetKubernetesClient(t *testing.T) {
 	}
 }
 
-/*func TestGetMyKubernetesClient(t *testing.T) {
+func TestGetMyKubernetesClient(t *testing.T) {
 	_, err := os.Stat(os.Getenv("HOME") + "/.kube/config")
-	_, configErr := util.GetMyKubernetesClient()
+	_, configErr := GetMyKubernetesClient()
 
 	if err == nil {
 		assert.Nil(t, configErr)
 	} else if os.IsNotExist(err) {
 		assert.NotNil(t, configErr)
 	}
-}*/
+}

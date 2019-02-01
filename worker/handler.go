@@ -13,30 +13,30 @@ type Handler interface {
 	ObjectUpdated(objOld, objNew interface{})
 }
 
-// TestHandler is a sample implementation of Handler
-type TestHandler struct{}
+// MyResourceHandler is a sample implementation of Handler
+type MyResourceHandler struct{}
 
 // Init handles any Handler initialization
-func (t *TestHandler) Init() error {
-	log.Info("TestHandler.Init")
+func (t *MyResourceHandler) Init() error {
+	log.Info("MyResourceHandler.Init")
 	return nil
 }
 
 // ObjectCreated is called when an object is created
-func (t *TestHandler) ObjectCreated(obj interface{}) {
-	log.Info("TestHandler.ObjectCreated")
+func (t *MyResourceHandler) ObjectCreated(obj interface{}) {
+	log.Info("MyResourceHandler.ObjectCreated")
 	// log.Info("MyResource is: %v", obj.(*v1.MyResource).Spec.Message)
 	service.CreateHttp(obj)
 }
 
 // ObjectDeleted is called when an object is deleted
-func (t *TestHandler) ObjectDeleted(obj interface{}) {
-	log.Info("TestHandler.ObjectDeleted")
+func (t *MyResourceHandler) ObjectDeleted(obj interface{}) {
+	log.Info("MyResourceHandler.ObjectDeleted")
 	service.DeleteHttp(obj)
 }
 
 // ObjectUpdated is called when an object is updated
-func (t *TestHandler) ObjectUpdated(objOld, objNew interface{}) {
-	log.Info("TestHandler.ObjectUpdated")
+func (t *MyResourceHandler) ObjectUpdated(objOld, objNew interface{}) {
+	log.Info("MyResourceHandler.ObjectUpdated")
 	service.UpdateHttp(objOld, objNew)
 }

@@ -93,19 +93,19 @@ func CreateHttp(obj interface{}) {
 	executingDeployment, err := deploymentsClient.Get(myResource.Name, metav1.GetOptions{})
 
 	if err == nil {
-		log.Infof("Pods (%s) already created. \n", myResource.Name)
+		log.Infof("Pods (%s) already created", myResource.Name)
 		log.Infof("Pods information:\n%v", executingDeployment)
 	} else {
 		if errors.IsNotFound(err) {
-			log.Infof("Creating deployment (%s) \n", myResource.Name)
+			log.Infof("Creating deployment (%s)", myResource.Name)
 			deploymentConfig := createHttpServiceSpec(myResource)
 			result, err := deploymentsClient.Create(deploymentConfig)
 			if err != nil {
 				panic(err)
 			}
-			log.Infof("Created deployment %s.\n", result.GetObjectMeta().GetName())
+			log.Infof("Created deployment %s", result.GetObjectMeta().GetName())
 		} else {
-			log.Errorf("Failed to query resource (%s)\n", myResource.Name)
+			log.Errorf("Failed to query resource (%s)", myResource.Name)
 			panic(err)
 		}
 	}
@@ -119,17 +119,17 @@ func UpdateHttp(objOld interface{}, objNew interface{}) {
 		// RetryOnConflict uses exponential backoff to avoid exhausting the apiserver
 		result, getErr := deploymentsClient.Get(objOld.(*v1.MyResource).Name, metav1.GetOptions{})
 		if getErr != nil {
-			panic(fmt.Errorf("Failed to get latest version of Deployment: %v", getErr))
+			panic(fmt.Errorf("failed to get latest version of Deployment: \n%v", getErr))
 		}
 		env := getHttpEnvVariable(*(objNew.(*v1.MyResource).Spec.SomeValue))
-		log.Infof("Updated env value: %v", env)
+		log.Infof("Updated env value: \n%v", env)
 		result.Spec.Template.Spec.Containers[0].Env = env
 		_, updateErr := deploymentsClient.Update(result)
 		return updateErr
 	})
 
 	if retryErr != nil {
-		panic(fmt.Errorf("Update failed: %v", retryErr))
+		panic(fmt.Errorf("update failed: \n%v", retryErr))
 	}
 }
 
@@ -149,6 +149,6 @@ func GetHttp() {
 		panic(err)
 	}
 	for _, d := range list.Items {
-		fmt.Printf(" * %s (%d replicas)\n", d.Name, *d.Spec.Replicas)
+		fmt.Printf(" * %s (%d replicas)", d.Name, *d.Spec.Replicas)
 	}*/
 }
